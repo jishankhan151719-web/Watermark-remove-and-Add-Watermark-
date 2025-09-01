@@ -1,0 +1,2 @@
+// A 1x1 black pixel PNG, used as a default placeholder for the watermark image.
+export const userPhotoBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';

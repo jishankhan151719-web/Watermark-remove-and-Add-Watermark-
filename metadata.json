@@ -1,0 +1,5 @@
+{
+  "name": "Watermark Bear Video Tool",
+  "description": "A concept app that simulates the UI/UX for removing watermarks from videos. This tool does not actually remove watermarks but demonstrates a potential user flow and provides AI-powered tips.",
+  "requestFramePermissions": []
+}
