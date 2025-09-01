@@ -18,25 +18,21 @@ try {
 
 // Utility to robustly check for rate limit errors from the Gemini API
 const isRateLimitError = (error: any): boolean => {
-    let message = '';
-    if (typeof error === 'string') {
-        message = error;
-    } else if (error instanceof Error) {
-        message = error.message;
-    } else if (typeof error === 'object' && error !== null) {
-        // Check for specific properties if they exist, which is more reliable
-        if (error?.error?.status === 'RESOURCE_EXHAUSTED' || error?.error?.code === 429) {
+    // Direct property check for object-based errors
+    if (typeof error === 'object' && error !== null) {
+        const nestedError = error.error || error; // Handles both {error: {}} and {}
+        if (nestedError.status === 'RESOURCE_EXHAUSTED' || nestedError.code === 429) {
             return true;
-        }
-        // Fallback to stringifying and checking the whole object
-        try {
-             message = JSON.stringify(error);
-        } catch {
-            message = String(error);
         }
     }
 
-    return message.toUpperCase().includes("429") || message.toUpperCase().includes("RESOURCE_EXHAUSTED");
+    // String-based check for serialized errors or error messages
+    const message = (error instanceof Error ? error.message : String(error)).toUpperCase();
+    if (message.includes('429') || message.includes('RESOURCE_EXHAUSTED')) {
+        return true;
+    }
+    
+    return false;
 };
 
 
@@ -83,7 +79,8 @@ export const getWatermarkTips = async (): Promise<string> => {
         return response.text;
     } catch (error) {
         console.error('Error generating content from Gemini:', error);
-        throw new Error('Failed to fetch tips from AI service.');
+        if (error instanceof Error) throw error;
+        throw new Error(`Failed to fetch tips from AI service: ${String(error)}`);
     }
 };
 
@@ -138,7 +135,8 @@ export const detectWatermark = async (base64Image: string): Promise<WatermarkAre
 
     } catch (error) {
         console.error('Error in detectWatermark:', error);
-        throw new Error('AI watermark detection failed.');
+        if (error instanceof Error) throw error;
+        throw new Error(`AI watermark detection failed: ${String(error)}`);
     }
 };
 
@@ -176,12 +174,8 @@ export const removeWatermarkFromFrame = async (base64ImageWithMarker: string): P
 
     } catch (error) {
         console.error(`Error in removeWatermarkFromFrame:`, error);
-        
-        if (error instanceof Error && error.message.includes('rate limiting')) {
-            throw new Error('AI watermark removal failed after multiple retries due to rate limiting.');
-        }
-        
-        throw new Error('AI watermark removal failed due to a non-recoverable error.');
+        if (error instanceof Error) throw error;
+        throw new Error(`AI watermark removal failed: ${String(error)}`);
     }
 };
 
